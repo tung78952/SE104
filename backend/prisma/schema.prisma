@@ -1,0 +1,164 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model GiangVien {
+  maGV       String      @id @db.VarChar(10)
+  hoTen      String      @db.VarChar(100)
+  email      String      @unique @db.VarChar(100)
+  khoaBoMon  String?     @db.VarChar(100)
+
+  taiKhoan   TaiKhoan?
+  cauHois    CauHoi[]
+  deThis     DeThi[]
+
+  @@map("GIANGVIEN")
+}
+
+model TaiKhoan {
+  maTK        Int        @id @default(autoincrement())
+  tenDangNhap String     @unique @db.VarChar(50)
+  matKhau     String     @db.VarChar(255)
+  vaiTro      String     @db.VarChar(20) // "admin" or "giaovien"
+  trangThai   Int        @default(1)     // 1: active, 0: locked
+
+  maGV        String?    @unique @db.VarChar(10)
+  giangVien   GiangVien? @relation(fields: [maGV], references: [maGV])
+
+  quyDinhs    QuyDinh[]  @relation("NguoiCapNhat")
+
+  @@map("TAIKHOAN")
+}
+
+model MonHoc {
+  maMon    String     @id @db.VarChar(10)
+  tenMon   String     @db.VarChar(150)
+  soTinChi Int
+
+  cauHois  CauHoi[]
+  deThis   DeThi[]
+  lopHocs  LopHoc[]
+
+  @@map("MONHOC")
+}
+
+model DoKho {
+  maDoKho   Int       @id @default(autoincrement())
+  tenDoKho  String    @unique @db.VarChar(30) // De, Trung Binh, Phuc Tap, Kho
+
+  cauHois   CauHoi[]
+
+  @@map("DOKHO")
+}
+
+model CauHoi {
+  maCauHoi  Int       @id @default(autoincrement())
+  noiDung   String    @db.Text
+  ngayTao   DateTime  @default(now())
+
+  maMon     String    @db.VarChar(10)
+  monHoc    MonHoc    @relation(fields: [maMon], references: [maMon])
+
+  maDoKho   Int
+  doKho     DoKho     @relation(fields: [maDoKho], references: [maDoKho])
+
+  maGV      String    @db.VarChar(10)
+  giangVien GiangVien @relation(fields: [maGV], references: [maGV])
+
+  chiTietDeThis ChiTietDeThi[]
+
+  @@map("CAUHOI")
+}
+
+model DeThi {
+  maDeThi    Int      @id @default(autoincrement())
+  hocKy      Int      @db.TinyInt // 1, 2, 3
+  namHoc     String   @db.VarChar(9)
+  thoiLuong  Int
+  ngayTao    DateTime @default(now())
+
+  maMon      String   @db.VarChar(10)
+  monHoc     MonHoc   @relation(fields: [maMon], references: [maMon])
+
+  maGV       String   @db.VarChar(10)
+  giangVien  GiangVien @relation(fields: [maGV], references: [maGV])
+
+  chiTietDeThis ChiTietDeThi[]
+  bangDiems     BangDiem[]
+
+  @@map("DETHI")
+}
+
+model ChiTietDeThi {
+  maDeThi   Int
+  maCauHoi  Int
+  soCau     Int     @db.TinyInt // Thu tu cau hoi trong de thi
+
+  deThi     DeThi   @relation(fields: [maDeThi], references: [maDeThi], onDelete: Cascade)
+  cauHoi    CauHoi  @relation(fields: [maCauHoi], references: [maCauHoi], onDelete: Cascade)
+
+  @@id([maDeThi, maCauHoi])
+  @@map("CHITIETDETHI")
+}
+
+model LopHoc {
+  maLop    String     @id @db.VarChar(10)
+  tenLop   String     @db.VarChar(100)
+
+  maMon    String     @db.VarChar(10)
+  monHoc   MonHoc     @relation(fields: [maMon], references: [maMon])
+
+  sinhViens SinhVien[]
+  bangDiems BangDiem[]
+
+  @@map("LOPHOC")
+}
+
+model SinhVien {
+  maSV    String     @id @db.VarChar(10)
+  hoTen   String     @db.VarChar(100)
+
+  maLop   String     @db.VarChar(10)
+  lopHoc  LopHoc     @relation(fields: [maLop], references: [maLop])
+
+  bangDiems BangDiem[]
+
+  @@map("SINHVIEN")
+}
+
+model BangDiem {
+  maBangDiem Int       @id @default(autoincrement())
+  hocKy      Int       @db.TinyInt
+  namHoc     String    @db.VarChar(9)
+  diemSo     Decimal   @db.Decimal(4, 1)
+  ghiChu     String?   @db.VarChar(255)
+
+  maSV       String    @db.VarChar(10)
+  sinhVien   SinhVien  @relation(fields: [maSV], references: [maSV])
+
+  maLop      String    @db.VarChar(10)
+  lopHoc     LopHoc    @relation(fields: [maLop], references: [maLop])
+
+  maDeThi    Int
+  deThi      DeThi     @relation(fields: [maDeThi], references: [maDeThi])
+
+  @@map("BANGDIEM")
+}
+
+model QuyDinh {
+  maQuyDinh    Int       @id @default(autoincrement())
+  tenThamSo    String    @unique @db.VarChar(50)
+  giaTri       String    @db.VarChar(50)
+  moTa         String?   @db.VarChar(255)
+  ngayCapNhat  DateTime  @default(now())
+
+  maTKCapNhat  Int
+  nguoiCapNhat TaiKhoan  @relation("NguoiCapNhat", fields: [maTKCapNhat], references: [maTK])
+
+  @@map("QUYDINH")
+}

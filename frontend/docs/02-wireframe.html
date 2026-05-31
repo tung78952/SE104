@@ -1,0 +1,745 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{display:flex;height:100vh;min-height:700px;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+.sidebar{width:200px;min-width:200px;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;flex-direction:column}
+.sidebar-logo{padding:14px 16px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;font-weight:500}
+.sidebar-logo span{font-size:10px;color:var(--color-text-secondary);display:block;margin-top:2px}
+.role-switch{padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;gap:4px;background:var(--color-background-primary)}
+.role-btn{flex:1;font-size:10px;padding:5px 8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary);text-align:center}
+.role-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary);font-weight:500}
+.nav-section{padding:6px 0}
+.nav-label{font-size:10px;color:var(--color-text-tertiary);padding:5px 16px 2px;text-transform:uppercase;letter-spacing:.6px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;cursor:pointer;color:var(--color-text-secondary)}
+.nav-item:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border-left:2px solid var(--color-text-primary)}
+.nav-item i{font-size:14px;width:16px;text-align:center}
+.nav-item.gv-hide{display:none}
+body[data-role="gv"] .nav-item.gv-hide{display:none}
+body[data-role="admin"] .nav-item.gv-hide{display:flex}
+body[data-role="gv"] .nav-item.adm-only{display:none}
+body[data-role="gv"] .label-danhmuc{display:none}
+body[data-role="admin"] .label-tracuu{display:none}
+.read-only-tag{font-size:8px;background:var(--color-background-secondary);color:var(--color-text-tertiary);padding:1px 5px;border-radius:99px;margin-left:auto;border:0.5px solid var(--color-border-tertiary)}
+body[data-role="admin"] .read-only-tag{display:none}
+.sidebar-user{margin-top:auto;padding:10px 16px;border-top:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:8px}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--color-background-info);border:0.5px solid var(--color-border-primary);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:var(--color-text-info);flex-shrink:0}
+.user-name{font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:9px;color:var(--color-text-tertiary)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:44px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
+.topbar-title{font-size:13px;font-weight:500;flex:1}
+.topbar-action{font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--color-text-secondary);background:transparent}
+.topbar-action:hover{background:var(--color-background-secondary)}
+.content{flex:1;overflow-y:auto;padding:18px;position:relative}
+.screen{display:none}
+.screen.active{display:block}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.stat-value{font-size:20px;font-weight:500}
+.stat-sub{font-size:10px;color:var(--color-text-tertiary);margin-top:1px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
+.card-title{font-size:12px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.card-title a{font-size:11px;color:var(--color-text-secondary);font-weight:400;cursor:pointer}
+.mini-table{width:100%;border-collapse:collapse;font-size:11px}
+.mini-table th{text-align:left;padding:4px 6px;color:var(--color-text-secondary);font-weight:400;border-bottom:0.5px solid var(--color-border-tertiary);font-size:10px}
+.mini-table td{padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.mini-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:1px 6px;border-radius:99px;font-size:10px;border:0.5px solid var(--color-border-secondary)}
+.badge-dark{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.chart-bar-wrap{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bar{width:100%;background:var(--color-border-primary);border-radius:2px 2px 0 0;border:0.5px solid var(--color-border-secondary)}
+.bar-label{font-size:9px;color:var(--color-text-tertiary)}
+.list-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px}
+.list-item:last-child{border-bottom:none}
+.list-num{width:16px;height:16px;border-radius:50%;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{font-size:11px;padding:5px 8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)}
+.filter-bar input{flex:1;min-width:120px}
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{text-align:left;padding:7px 8px;color:var(--color-text-secondary);font-weight:400;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);font-size:10px}
+.data-table td{padding:7px 8px;border:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+.data-table tr:hover td{background:var(--color-background-secondary)}
+.action-btn{font-size:10px;padding:2px 7px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);background:transparent;margin-right:2px}
+.action-btn:hover{background:var(--color-background-secondary)}
+.action-btn.danger{color:var(--color-text-danger);border-color:var(--color-border-danger)}
+body[data-role="gv"] .gv-readonly{display:none !important}
+.pagination{display:flex;align-items:center;gap:4px;margin-top:10px;font-size:11px;color:var(--color-text-secondary)}
+.page-btn{width:24px;height:24px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px}
+.page-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:10px;color:var(--color-text-secondary);font-weight:500}
+.form-input{padding:6px 9px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:11px;background:var(--color-background-primary);color:var(--color-text-primary)}
+.form-hint{font-size:9px;color:var(--color-text-tertiary)}
+.form-actions{display:flex;gap:8px;margin-top:16px}
+.btn-primary{padding:6px 16px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);font-size:11px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:5px}
+.btn-secondary{padding:6px 16px;background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:11px;cursor:pointer}
+.btn-danger{padding:6px 16px;background:var(--color-text-danger);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);font-size:11px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:5px}
+.section-divider{font-size:10px;font-weight:500;color:var(--color-text-secondary);margin:14px 0 8px;padding-bottom:5px;border-bottom:0.5px solid var(--color-border-tertiary);text-transform:uppercase;letter-spacing:.5px}
+.two-col-picker{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.picker-panel{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.picker-header{padding:7px 10px;background:var(--color-background-secondary);font-size:10px;font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.picker-body{height:180px;overflow-y:auto}
+.picker-row{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:10px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.picker-row:hover{background:var(--color-background-secondary)}
+.picker-row input[type=checkbox]{width:12px;height:12px;flex-shrink:0}
+.picker-row .diff-tag{font-size:8px;padding:1px 4px;border:0.5px solid var(--color-border-tertiary);border-radius:99px;color:var(--color-text-tertiary);margin-left:auto;white-space:nowrap}
+.info-box{background:var(--color-background-info);border:0.5px solid var(--color-border-info);border-radius:var(--border-radius-md);padding:7px 10px;font-size:10px;color:var(--color-text-info);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.profile-header{display:flex;align-items:center;gap:16px;padding:16px;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:16px;border:0.5px solid var(--color-border-tertiary)}
+.profile-avatar{width:56px;height:56px;border-radius:50%;border:0.5px solid var(--color-border-primary);background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:var(--color-text-info);flex-shrink:0}
+.detail-header{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-bottom:14px;display:flex;gap:24px;flex-wrap:wrap}
+.detail-field{display:flex;flex-direction:column;gap:2px}
+.detail-field label{font-size:10px;color:var(--color-text-tertiary)}
+.detail-field span{font-size:12px;font-weight:500}
+/* Modal */
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:flex-start;justify-content:center;padding:50px 20px;z-index:100;overflow-y:auto}
+.modal-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);width:100%;max-width:460px;max-height:85vh;overflow-y:auto}
+.modal-box.sm{max-width:380px}
+.modal-box.lg{max-width:560px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.modal-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
+.modal-body{padding:16px 18px}
+.modal-footer{padding:10px 18px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:flex-end;gap:8px}
+.close-x{font-size:14px;cursor:pointer;color:var(--color-text-tertiary)}
+</style>
+
+<h2 class="sr-only">Wireframe phiên bản cuối – Admin và Giảng viên, có modal đại diện</h2>
+
+<div id="login-screen" style="display:none">
+  <div style="min-height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-background-tertiary);padding:40px 20px;height:100vh">
+    <div style="width:340px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:32px 28px">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:48px;height:48px;border:1.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px"><i class="ti ti-school" aria-hidden="true"></i></div>
+        <h1 style="font-size:15px;font-weight:500;margin-bottom:3px">Hệ thống Quản lý Thi</h1>
+        <p style="font-size:11px;color:var(--color-text-secondary)">SE104 – Đại học Công nghệ Thông tin</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group"><label class="form-label">Tên đăng nhập</label><input class="form-input" placeholder="Nhập tên đăng nhập..." value="admin"></div>
+        <div class="form-group"><label class="form-label">Mật khẩu</label><input class="form-input" type="password" value="••••••••"></div>
+        <button class="btn-primary" style="width:100%;justify-content:center;padding:8px" onclick="enterApp()"><i class="ti ti-login" aria-hidden="true"></i> Đăng nhập</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="main-app">
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <i class="ti ti-school" aria-hidden="true" style="font-size:15px"></i> Quản lý Thi SE104
+      <span id="role-sub">Admin đang đăng nhập</span>
+    </div>
+    <div class="role-switch">
+      <button class="role-btn active" id="btn-admin" onclick="setRole('admin')">Admin</button>
+      <button class="role-btn" id="btn-gv" onclick="setRole('gv')">Giảng viên</button>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <div class="nav-section">
+        <div class="nav-item active" onclick="show('dashboard',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</div>
+        <div class="nav-item" onclick="show('profile',this)"><i class="ti ti-user-circle" aria-hidden="true"></i>Hồ sơ cá nhân</div>
+        <div class="nav-label label-danhmuc">Quản trị danh mục</div>
+        <div class="nav-label label-tracuu">Tra cứu danh mục</div>
+        <div class="nav-item adm-only" onclick="show('users',this)"><i class="ti ti-users" aria-hidden="true"></i>Tài khoản</div>
+        <div class="nav-item" onclick="show('subjects',this)"><i class="ti ti-book" aria-hidden="true"></i>Môn học<span class="read-only-tag">Xem</span></div>
+        <div class="nav-item" onclick="show('classes',this)"><i class="ti ti-building" aria-hidden="true"></i>Lớp học<span class="read-only-tag">Xem</span></div>
+        <div class="nav-item" onclick="show('students',this)"><i class="ti ti-id-badge" aria-hidden="true"></i>Sinh viên<span class="read-only-tag">Xem</span></div>
+        <div class="nav-item" onclick="show('difficulties',this)"><i class="ti ti-adjustments" aria-hidden="true"></i>Độ khó<span class="read-only-tag">Xem</span></div>
+        <div class="nav-item" onclick="show('regulations',this)"><i class="ti ti-settings" aria-hidden="true"></i>Quy định<span class="read-only-tag">Xem</span></div>
+        <div class="nav-label">Nghiệp vụ</div>
+        <div class="nav-item" onclick="show('questions',this)"><i class="ti ti-help-circle" aria-hidden="true"></i>Câu hỏi</div>
+        <div class="nav-item" onclick="show('exams',this)"><i class="ti ti-file-text" aria-hidden="true"></i>Đề thi</div>
+        <div class="nav-item" onclick="show('grades',this)"><i class="ti ti-table" aria-hidden="true"></i>Bảng điểm</div>
+        <div class="nav-label">Báo cáo</div>
+        <div class="nav-item" onclick="show('report1',this)"><i class="ti ti-chart-bar" aria-hidden="true"></i>Theo môn học</div>
+        <div class="nav-item" onclick="show('report2',this)"><i class="ti ti-chart-area" aria-hidden="true"></i>Theo lớp học</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar" id="user-avatar">AD</div>
+      <div style="flex:1;min-width:0">
+        <div class="user-name" id="user-name">Nguyễn Minh Tuấn</div>
+        <div class="user-role" id="user-role">Admin</div>
+      </div>
+      <i class="ti ti-logout" aria-label="Đăng xuất" style="font-size:13px;color:var(--color-text-tertiary);cursor:pointer" onclick="logout()"></i>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-action"><i class="ti ti-bell" aria-hidden="true" style="font-size:13px"></i></div>
+      <div class="topbar-action" onclick="show('profile',null)"><i class="ti ti-user-circle" aria-hidden="true" style="font-size:13px"></i> Hồ sơ</div>
+    </div>
+
+    <div class="content" id="content">
+
+      <!-- DASHBOARD -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-book" aria-hidden="true"></i> Môn học</div><div class="stat-value">12</div><div class="stat-sub">Học kỳ 1/2024</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-building" aria-hidden="true"></i> Lớp học</div><div class="stat-value">34</div><div class="stat-sub">đang hoạt động</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-help-circle" aria-hidden="true"></i> Câu hỏi</div><div class="stat-value">1.284</div><div class="stat-sub">trong ngân hàng</div></div>
+          <div class="stat-card"><div class="stat-label"><i class="ti ti-file-text" aria-hidden="true"></i> Đề thi</div><div class="stat-value">58</div><div class="stat-sub">+7 tháng này</div></div>
+        </div>
+        <div class="row-2">
+          <div class="card">
+            <div class="card-title">Đề thi gần đây <a onclick="show('exams',null)">Xem tất cả →</a></div>
+            <table class="mini-table"><thead><tr><th>Mã đề</th><th>Môn</th><th>HK</th><th>Người lập</th><th>Ngày</th></tr></thead><tbody>
+              <tr><td>DT-2024-058</td><td>Cơ sở dữ liệu</td><td>HK1</td><td>Lê Thị Hoa</td><td>17/05</td></tr>
+              <tr><td>DT-2024-057</td><td>Mạng máy tính</td><td>HK1</td><td>Trần Văn Nam</td><td>15/05</td></tr>
+              <tr><td>DT-2024-056</td><td>Giải tích 1</td><td>HK1</td><td>Phạm Anh Khoa</td><td>14/05</td></tr>
+              <tr><td>DT-2024-055</td><td>Lập trình OOP</td><td>HK1</td><td>Nguyễn Thị Mai</td><td>12/05</td></tr>
+            </tbody></table>
+          </div>
+          <div class="card">
+            <div class="card-title">Câu hỏi mới tạo <a onclick="show('questions',null)">Xem tất cả →</a></div>
+            <div class="list-item"><div class="list-num">1</div><div style="flex:1">Trình bày khái niệm chuẩn hoá 3NF<br><span style="font-size:9px;color:var(--color-text-tertiary)">Lê Thị Hoa – Trung bình</span></div></div>
+            <div class="list-item"><div class="list-num">2</div><div style="flex:1">Phân biệt TCP và UDP<br><span style="font-size:9px;color:var(--color-text-tertiary)">Trần Văn Nam – Dễ</span></div></div>
+            <div class="list-item"><div class="list-num">3</div><div style="flex:1">Chứng minh giới hạn bằng epsilon-delta<br><span style="font-size:9px;color:var(--color-text-tertiary)">Phạm Anh Khoa – Khó</span></div></div>
+            <div class="list-item"><div class="list-num">4</div><div style="flex:1">Cài đặt BST bằng Java<br><span style="font-size:9px;color:var(--color-text-tertiary)">Nguyễn Thị Mai – Phức tạp</span></div></div>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="card">
+            <div class="card-title">Số đề thi theo môn – HK1/2024-2025</div>
+            <div class="chart-bar-wrap">
+              <div class="bar-col"><div class="bar" style="height:72px"></div><div class="bar-label">CSDL</div></div>
+              <div class="bar-col"><div class="bar" style="height:54px"></div><div class="bar-label">MMT</div></div>
+              <div class="bar-col"><div class="bar" style="height:42px"></div><div class="bar-label">GT1</div></div>
+              <div class="bar-col"><div class="bar" style="height:60px"></div><div class="bar-label">OOP</div></div>
+              <div class="bar-col"><div class="bar" style="height:30px"></div><div class="bar-label">KTMT</div></div>
+              <div class="bar-col"><div class="bar" style="height:48px"></div><div class="bar-label">DSA</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Tổng quan hệ thống</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+              <div class="stat-card"><div class="stat-label">Sinh viên</div><div class="stat-value">847</div></div>
+              <div class="stat-card"><div class="stat-label">Bảng điểm</div><div class="stat-value">2.103</div></div>
+              <div class="stat-card"><div class="stat-label">Giảng viên</div><div class="stat-value">18</div></div>
+              <div class="stat-card"><div class="stat-label">Điểm TB</div><div class="stat-value">6.4</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HỒ SƠ -->
+      <div class="screen" id="screen-profile">
+        <div class="profile-header">
+          <div class="profile-avatar" id="prof-av">AD</div>
+          <div>
+            <div style="font-size:15px;font-weight:500" id="prof-name">Nguyễn Minh Tuấn</div>
+            <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px"><span class="badge badge-dark" id="prof-role">Admin</span></div>
+          </div>
+          <div style="margin-left:auto"><button class="btn-secondary" onclick="openModal('m-changepw')"><i class="ti ti-lock" aria-hidden="true"></i> Đổi mật khẩu</button></div>
+        </div>
+        <div class="card">
+          <div class="section-divider">Thông tin chỉ đọc</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div class="form-group"><label class="form-label">Mã tài khoản</label><div style="font-size:11px;padding:6px 9px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)">TK001</div></div>
+            <div class="form-group"><label class="form-label">Tên đăng nhập</label><div style="font-size:11px;padding:6px 9px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)">admin</div></div>
+            <div class="form-group"><label class="form-label">Vai trò</label><div style="font-size:11px;padding:6px 9px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)" id="prof-role2">Admin</div></div>
+          </div>
+          <div class="section-divider">Thông tin có thể chỉnh sửa</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Họ và tên *</label><input class="form-input" value="Nguyễn Minh Tuấn"></div>
+            <div class="form-group"><label class="form-label">Email *</label><input class="form-input" value="tuan.nm@uit.edu.vn"></div>
+            <div class="form-group full"><label class="form-label">Khoa / Bộ môn</label><input class="form-input" value="Khoa Khoa học Máy tính"></div>
+          </div>
+          <div class="form-actions"><button class="btn-primary"><i class="ti ti-device-floppy" aria-hidden="true"></i> Lưu thay đổi</button><button class="btn-secondary">Huỷ</button></div>
+        </div>
+      </div>
+
+      <!-- TÀI KHOẢN (Admin only) -->
+      <div class="screen" id="screen-users">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍  Tìm tên đăng nhập...">
+          <select><option>Tất cả vai trò</option><option>Admin</option><option>Giảng viên</option></select>
+          <select><option>Tất cả trạng thái</option><option>Hoạt động</option><option>Khoá</option></select>
+          <button class="btn-primary" onclick="openModal('m-user')"><i class="ti ti-plus" aria-hidden="true"></i> Thêm tài khoản</button>
+        </div>
+        <table class="data-table"><thead><tr><th>Mã TK</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Hành động</th></tr></thead><tbody>
+          <tr><td>TK001</td><td>admin</td><td>Nguyễn Minh Tuấn</td><td>tuan.nm@uit.edu.vn</td><td><span class="badge badge-dark">Admin</span></td><td><span class="badge">Hoạt động</span></td><td><button class="action-btn" onclick="openModal('m-user')">Sửa</button><button class="action-btn">Khoá</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>TK002</td><td>lehoa.gv</td><td>Lê Thị Hoa</td><td>hoa.lt@uit.edu.vn</td><td><span class="badge">Giảng viên</span></td><td><span class="badge">Hoạt động</span></td><td><button class="action-btn" onclick="openModal('m-user')">Sửa</button><button class="action-btn">Khoá</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>TK003</td><td>namtv.gv</td><td>Trần Văn Nam</td><td>nam.tv@uit.edu.vn</td><td><span class="badge">Giảng viên</span></td><td><span class="badge">Hoạt động</span></td><td><button class="action-btn" onclick="openModal('m-user')">Sửa</button><button class="action-btn">Khoá</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+        <div class="pagination">Hiển thị 1–3 / 18 kết quả <div style="margin-left:auto;display:flex;gap:4px"><div class="page-btn active">1</div><div class="page-btn">2</div><div class="page-btn">3</div></div></div>
+      </div>
+
+      <!-- MÔN HỌC -->
+      <div class="screen" id="screen-subjects">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍  Tìm mã hoặc tên môn...">
+          <button class="btn-primary gv-readonly"><i class="ti ti-plus" aria-hidden="true"></i> Thêm môn học</button>
+        </div>
+        <table class="data-table"><thead><tr><th>Mã môn</th><th>Tên môn học</th><th>Số tín chỉ</th><th>Số câu hỏi</th><th>Số đề thi</th><th class="gv-readonly">Hành động</th></tr></thead><tbody>
+          <tr><td>CS301</td><td>Cơ sở dữ liệu</td><td>3</td><td>187</td><td>12</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>CS302</td><td>Mạng máy tính</td><td>3</td><td>142</td><td>9</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>MA101</td><td>Giải tích 1</td><td>4</td><td>234</td><td>14</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>CS201</td><td>Lập trình hướng đối tượng</td><td>3</td><td>165</td><td>10</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+      </div>
+
+      <!-- LỚP HỌC -->
+      <div class="screen" id="screen-classes">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍  Tìm mã lớp...">
+          <select><option>Tất cả môn</option><option>CSDL</option><option>MMT</option></select>
+          <button class="btn-primary gv-readonly"><i class="ti ti-plus" aria-hidden="true"></i> Thêm lớp</button>
+        </div>
+        <table class="data-table"><thead><tr><th>Mã lớp</th><th>Tên lớp</th><th>Môn học</th><th>Sĩ số</th><th>Hành động</th></tr></thead><tbody>
+          <tr><td>CS301.L11</td><td>Cơ sở dữ liệu – Lớp 11</td><td>Cơ sở dữ liệu</td><td>42</td><td><button class="action-btn" onclick="show('class_detail',null)">Chi tiết</button><button class="action-btn gv-readonly">Sửa</button><button class="action-btn danger gv-readonly" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>CS302.L21</td><td>Mạng máy tính – Lớp 21</td><td>Mạng máy tính</td><td>38</td><td><button class="action-btn" onclick="show('class_detail',null)">Chi tiết</button><button class="action-btn gv-readonly">Sửa</button><button class="action-btn danger gv-readonly" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>MA101.L31</td><td>Giải tích 1 – Lớp 31</td><td>Giải tích 1</td><td>45</td><td><button class="action-btn" onclick="show('class_detail',null)">Chi tiết</button><button class="action-btn gv-readonly">Sửa</button><button class="action-btn danger gv-readonly" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+      </div>
+
+      <!-- CHI TIẾT LỚP -->
+      <div class="screen" id="screen-class_detail">
+        <div class="detail-header">
+          <div class="detail-field"><label>Mã lớp</label><span>CS301.L11</span></div>
+          <div class="detail-field"><label>Tên lớp</label><span>Cơ sở dữ liệu – Lớp 11</span></div>
+          <div class="detail-field"><label>Môn học</label><span>Cơ sở dữ liệu (CS301)</span></div>
+          <div class="detail-field"><label>Sĩ số</label><span>42 sinh viên</span></div>
+          <div style="margin-left:auto"><button class="btn-secondary" onclick="show('classes',null)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Quay lại</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Danh sách sinh viên trong lớp
+            <button class="btn-primary gv-readonly" style="font-size:10px;padding:4px 10px"><i class="ti ti-plus" aria-hidden="true"></i> Thêm SV vào lớp</button>
+          </div>
+          <table class="data-table"><thead><tr><th>MSSV</th><th>Họ và tên</th><th class="gv-readonly">Hành động</th></tr></thead><tbody>
+            <tr><td>21521001</td><td>Nguyễn Văn An</td><td class="gv-readonly"><button class="action-btn danger" onclick="openModal('m-delete')">Xoá khỏi lớp</button></td></tr>
+            <tr><td>21521002</td><td>Trần Thị Bình</td><td class="gv-readonly"><button class="action-btn danger" onclick="openModal('m-delete')">Xoá khỏi lớp</button></td></tr>
+            <tr><td>21521003</td><td>Lê Quang Cảnh</td><td class="gv-readonly"><button class="action-btn danger" onclick="openModal('m-delete')">Xoá khỏi lớp</button></td></tr>
+            <tr><td>21521004</td><td>Phạm Thị Diệu</td><td class="gv-readonly"><button class="action-btn danger" onclick="openModal('m-delete')">Xoá khỏi lớp</button></td></tr>
+          </tbody></table>
+          <div class="pagination">Hiển thị 1–4 / 42 sinh viên</div>
+        </div>
+      </div>
+
+      <!-- SINH VIÊN -->
+      <div class="screen" id="screen-students">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍  Tìm MSSV hoặc họ tên...">
+          <select><option>Tất cả lớp</option><option>CS301.L11</option></select>
+          <button class="btn-primary gv-readonly"><i class="ti ti-plus" aria-hidden="true"></i> Thêm sinh viên</button>
+        </div>
+        <table class="data-table"><thead><tr><th>MSSV</th><th>Họ và tên</th><th>Lớp</th><th>Môn học</th><th class="gv-readonly">Hành động</th></tr></thead><tbody>
+          <tr><td>21521001</td><td>Nguyễn Văn An</td><td>CS301.L11</td><td>Cơ sở dữ liệu</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>21521002</td><td>Trần Thị Bình</td><td>CS301.L11</td><td>Cơ sở dữ liệu</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>21521003</td><td>Lê Minh Cường</td><td>CS302.L21</td><td>Mạng máy tính</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+        <div class="pagination">Hiển thị 1–3 / 847 kết quả</div>
+      </div>
+
+      <!-- ĐỘ KHÓ -->
+      <div class="screen" id="screen-difficulties">
+        <div class="filter-bar"><button class="btn-primary gv-readonly"><i class="ti ti-plus" aria-hidden="true"></i> Thêm độ khó</button></div>
+        <table class="data-table"><thead><tr><th>Mã</th><th>Tên độ khó</th><th>Số câu áp dụng</th><th class="gv-readonly">Hành động</th></tr></thead><tbody>
+          <tr><td>DK001</td><td>Dễ</td><td>312</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>DK002</td><td>Trung bình</td><td>487</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>DK003</td><td>Phức tạp</td><td>289</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>DK004</td><td>Khó</td><td>196</td><td class="gv-readonly"><button class="action-btn">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+      </div>
+
+      <!-- QUY ĐỊNH -->
+      <div class="screen" id="screen-regulations">
+        <div class="info-box"><i class="ti ti-info-circle" aria-hidden="true"></i> Quy định được cache 60 giây. Thay đổi có hiệu lực sau tối đa 60 giây.</div>
+        <table class="data-table"><thead><tr><th>Tham số</th><th>Giá trị</th><th>Mô tả</th><th>Cập nhật lần cuối</th><th class="gv-readonly">Hành động</th></tr></thead><tbody>
+          <tr><td>SoCauToiDa</td><td><input class="form-input" style="width:65px" value="50"></td><td>Số câu hỏi tối đa / đề</td><td>10/05/2025</td><td class="gv-readonly"><button class="action-btn">Lưu</button></td></tr>
+          <tr><td>ThoiLuongMin</td><td><input class="form-input" style="width:65px" value="30"></td><td>Thời lượng tối thiểu (phút)</td><td>10/05/2025</td><td class="gv-readonly"><button class="action-btn">Lưu</button></td></tr>
+          <tr><td>ThoiLuongMax</td><td><input class="form-input" style="width:65px" value="180"></td><td>Thời lượng tối đa (phút)</td><td>10/05/2025</td><td class="gv-readonly"><button class="action-btn">Lưu</button></td></tr>
+          <tr><td>DiemMin</td><td><input class="form-input" style="width:65px" value="0"></td><td>Điểm tối thiểu</td><td>10/05/2025</td><td class="gv-readonly"><button class="action-btn">Lưu</button></td></tr>
+          <tr><td>DiemMax</td><td><input class="form-input" style="width:65px" value="10"></td><td>Điểm tối đa</td><td>10/05/2025</td><td class="gv-readonly"><button class="action-btn">Lưu</button></td></tr>
+        </tbody></table>
+      </div>
+
+      <!-- CÂU HỎI -->
+      <div class="screen" id="screen-questions">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍  Tìm theo nội dung câu hỏi...">
+          <select><option>Tất cả môn</option><option>Cơ sở dữ liệu</option></select>
+          <select><option>Tất cả độ khó</option><option>Dễ</option><option>Trung bình</option></select>
+          <button class="btn-primary" onclick="show('question_form',null)"><i class="ti ti-plus" aria-hidden="true"></i> Soạn câu hỏi</button>
+        </div>
+        <table class="data-table"><thead><tr><th>Mã</th><th>Nội dung</th><th>Môn</th><th>Độ khó</th><th>Người soạn</th><th>Ngày tạo</th><th>Hành động</th></tr></thead><tbody>
+          <tr><td>CH0412</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Trình bày khái niệm chuẩn hoá 3NF và ví dụ minh hoạ...</td><td>CSDL</td><td><span class="badge">Trung bình</span></td><td>Lê Thị Hoa</td><td>17/05</td><td><button class="action-btn" onclick="openModal('m-viewq')">Xem</button><button class="action-btn" onclick="show('question_form',null)">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>CH0411</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Phân biệt TCP và UDP trong giao thức mạng...</td><td>MMT</td><td><span class="badge">Dễ</span></td><td>Trần Văn Nam</td><td>15/05</td><td><button class="action-btn" onclick="openModal('m-viewq')">Xem</button><button class="action-btn" onclick="show('question_form',null)">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>CH0410</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Chứng minh giới hạn bằng định nghĩa epsilon-delta...</td><td>GT1</td><td><span class="badge">Khó</span></td><td>Phạm Anh Khoa</td><td>14/05</td><td><button class="action-btn" onclick="openModal('m-viewq')">Xem</button><button class="action-btn" onclick="show('question_form',null)">Sửa</button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+        <div class="pagination">Hiển thị 1–3 / 1.284 câu</div>
+      </div>
+
+      <!-- SOẠN CÂU HỎI -->
+      <div class="screen" id="screen-question_form">
+        <div class="card">
+          <div class="section-divider">Soạn / Sửa câu hỏi</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Môn học *</label><select class="form-input"><option selected>Cơ sở dữ liệu (CS301)</option></select></div>
+            <div class="form-group"><label class="form-label">Độ khó *</label><select class="form-input"><option>Dễ</option><option selected>Trung bình</option><option>Phức tạp</option><option>Khó</option></select></div>
+            <div class="form-group full"><label class="form-label">Nội dung câu hỏi *</label><textarea class="form-input" style="height:120px;resize:vertical;font-family:inherit">Trình bày khái niệm chuẩn hoá dữ liệu 3NF (Third Normal Form). Cho ví dụ minh hoạ với bảng dữ liệu cụ thể và trình bày các bước chuyển đổi về dạng chuẩn 3NF.</textarea></div>
+          </div>
+          <div class="form-actions"><button class="btn-primary" onclick="show('questions',null)"><i class="ti ti-device-floppy" aria-hidden="true"></i> Lưu câu hỏi</button><button class="btn-secondary" onclick="show('questions',null)">Huỷ</button></div>
+        </div>
+      </div>
+
+      <!-- ĐỀ THI -->
+      <div class="screen" id="screen-exams">
+        <div class="filter-bar">
+          <select><option>Tất cả môn</option></select>
+          <select><option>Tất cả HK</option><option>HK1</option></select>
+          <input type="text" placeholder="Năm học..." style="width:140px;flex:none">
+          <button class="btn-primary" onclick="show('exam_form',null)"><i class="ti ti-plus" aria-hidden="true"></i> Lập đề thi mới</button>
+        </div>
+        <table class="data-table"><thead><tr><th>Mã đề</th><th>Môn học</th><th>HK</th><th>Năm học</th><th>Thời lượng</th><th>Số câu</th><th>Người lập</th><th>Hành động</th></tr></thead><tbody>
+          <tr><td>DT-2024-058</td><td>Cơ sở dữ liệu</td><td>HK1</td><td>2024-2025</td><td>90 phút</td><td>40</td><td>Lê Thị Hoa</td><td><button class="action-btn" onclick="show('exam_detail',null)">Xem</button><button class="action-btn" onclick="show('exam_form',null)">Sửa</button><button class="action-btn"><i class="ti ti-file-type-pdf" aria-hidden="true"></i></button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>DT-2024-057</td><td>Mạng máy tính</td><td>HK1</td><td>2024-2025</td><td>75 phút</td><td>35</td><td>Trần Văn Nam</td><td><button class="action-btn" onclick="show('exam_detail',null)">Xem</button><button class="action-btn" onclick="show('exam_form',null)">Sửa</button><button class="action-btn"><i class="ti ti-file-type-pdf" aria-hidden="true"></i></button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+          <tr><td>DT-2024-056</td><td>Giải tích 1</td><td>HK1</td><td>2024-2025</td><td>120 phút</td><td>50</td><td>Phạm Anh Khoa</td><td><button class="action-btn" onclick="show('exam_detail',null)">Xem</button><button class="action-btn" onclick="show('exam_form',null)">Sửa</button><button class="action-btn"><i class="ti ti-file-type-pdf" aria-hidden="true"></i></button><button class="action-btn danger" onclick="openModal('m-delete')">Xoá</button></td></tr>
+        </tbody></table>
+      </div>
+
+      <!-- LẬP ĐỀ THI -->
+      <div class="screen" id="screen-exam_form">
+        <div class="card" style="margin-bottom:12px">
+          <div class="section-divider">Thông tin chung đề thi</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Môn học *</label><select class="form-input"><option selected>Cơ sở dữ liệu (CS301)</option></select></div>
+            <div class="form-group"><label class="form-label">Học kỳ *</label><select class="form-input"><option>HK1</option><option>HK2</option><option>HK3</option></select></div>
+            <div class="form-group"><label class="form-label">Năm học *</label><input class="form-input" value="2024-2025"></div>
+            <div class="form-group"><label class="form-label">Thời lượng (phút) *</label><input class="form-input" type="number" value="90"><div class="form-hint">Quy định: 30 – 180 phút</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-divider">Chọn câu hỏi <span style="font-weight:400;font-size:9px;color:var(--color-text-tertiary)">(tối đa 50 câu)</span></div>
+          <div class="two-col-picker">
+            <div class="picker-panel">
+              <div class="picker-header">Ngân hàng – CSDL <span style="font-size:9px;color:var(--color-text-tertiary)">187 câu</span></div>
+              <div style="padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary)"><input class="form-input" style="width:100%;font-size:10px;padding:3px 7px" placeholder="🔍  Tìm câu..."></div>
+              <div class="picker-body">
+                <div class="picker-row"><input type="checkbox"><span>Trình bày khái niệm chuẩn hoá 3NF...</span><span class="diff-tag">TB</span></div>
+                <div class="picker-row"><input type="checkbox" checked><span>Phân biệt khoá chính và khoá ngoại...</span><span class="diff-tag">Dễ</span></div>
+                <div class="picker-row"><input type="checkbox"><span>Thiết kế CSDL cho hệ thống bán hàng...</span><span class="diff-tag">Khó</span></div>
+                <div class="picker-row"><input type="checkbox" checked><span>Viết câu truy vấn SQL JOIN 3 bảng...</span><span class="diff-tag">PT</span></div>
+                <div class="picker-row"><input type="checkbox"><span>Trình bày các dạng chuẩn 1NF, 2NF...</span><span class="diff-tag">TB</span></div>
+                <div class="picker-row"><input type="checkbox" checked><span>Thực thể yếu là gì? Cho ví dụ...</span><span class="diff-tag">Dễ</span></div>
+              </div>
+            </div>
+            <div class="picker-panel">
+              <div class="picker-header">Câu đã chọn <span style="font-size:9px;color:var(--color-text-tertiary)">3 / 50</span></div>
+              <div class="picker-body">
+                <div class="picker-row"><span style="color:var(--color-text-tertiary);font-size:9px;min-width:14px">1.</span><span style="flex:1">Phân biệt khoá chính và khoá ngoại...</span><button class="action-btn danger" style="font-size:9px;padding:1px 5px">✕</button></div>
+                <div class="picker-row"><span style="color:var(--color-text-tertiary);font-size:9px;min-width:14px">2.</span><span style="flex:1">Viết câu truy vấn SQL JOIN 3 bảng...</span><button class="action-btn danger" style="font-size:9px;padding:1px 5px">✕</button></div>
+                <div class="picker-row"><span style="color:var(--color-text-tertiary);font-size:9px;min-width:14px">3.</span><span style="flex:1">Thực thể yếu là gì? Cho ví dụ...</span><button class="action-btn danger" style="font-size:9px;padding:1px 5px">✕</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions"><button class="btn-primary" onclick="show('exams',null)"><i class="ti ti-device-floppy" aria-hidden="true"></i> Lưu đề thi</button><button class="btn-secondary" onclick="show('exams',null)">Huỷ</button></div>
+        </div>
+      </div>
+
+      <!-- CHI TIẾT ĐỀ THI -->
+      <div class="screen" id="screen-exam_detail">
+        <div class="detail-header">
+          <div class="detail-field"><label>Mã đề thi</label><span>DT-2024-058</span></div>
+          <div class="detail-field"><label>Môn học</label><span>Cơ sở dữ liệu</span></div>
+          <div class="detail-field"><label>Học kỳ</label><span>HK1 / 2024-2025</span></div>
+          <div class="detail-field"><label>Thời lượng</label><span>90 phút</span></div>
+          <div class="detail-field"><label>Số câu</label><span>40 câu</span></div>
+          <div class="detail-field"><label>Người lập</label><span>Lê Thị Hoa</span></div>
+          <div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button class="btn-secondary" onclick="show('exam_form',null)"><i class="ti ti-pencil" aria-hidden="true"></i> Sửa</button>
+            <button class="btn-secondary"><i class="ti ti-file-type-pdf" aria-hidden="true"></i> PDF</button>
+            <button class="btn-secondary"><i class="ti ti-file-type-doc" aria-hidden="true"></i> DOCX</button>
+            <button class="btn-secondary" onclick="show('exams',null)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Quay lại</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Danh sách câu hỏi trong đề</div>
+          <table class="data-table"><thead><tr><th style="width:40px">STT</th><th>Nội dung câu hỏi</th><th>Độ khó</th></tr></thead><tbody>
+            <tr><td style="text-align:center">1</td><td>Trình bày khái niệm chuẩn hoá 3NF và cho ví dụ minh hoạ với bảng dữ liệu cụ thể...</td><td><span class="badge">Trung bình</span></td></tr>
+            <tr><td style="text-align:center">2</td><td>Phân biệt khoá chính (Primary Key) và khoá ngoại (Foreign Key)...</td><td><span class="badge">Dễ</span></td></tr>
+            <tr><td style="text-align:center">3</td><td>Thiết kế sơ đồ ERD cho hệ thống quản lý bán hàng trực tuyến...</td><td><span class="badge">Khó</span></td></tr>
+            <tr><td style="text-align:center">4</td><td>Viết câu truy vấn SQL JOIN 3 bảng và lọc theo điều kiện...</td><td><span class="badge">Phức tạp</span></td></tr>
+          </tbody></table>
+          <div class="pagination">Hiển thị 1–4 / 40 câu</div>
+        </div>
+      </div>
+
+      <!-- BẢNG ĐIỂM -->
+      <div class="screen" id="screen-grades">
+        <div class="filter-bar">
+          <select><option>Tất cả lớp</option></select>
+          <select><option>Tất cả đề thi</option></select>
+          <select><option>Tất cả HK</option><option>HK1</option></select>
+          <button class="btn-primary" onclick="show('grade_new',null)"><i class="ti ti-plus" aria-hidden="true"></i> Nhập 1 SV</button>
+          <button class="btn-primary" onclick="show('grade_batch',null)"><i class="ti ti-upload" aria-hidden="true"></i> Nhập loạt</button>
+          <button class="topbar-action"><i class="ti ti-file-type-pdf" aria-hidden="true"></i> Xuất PDF</button>
+        </div>
+        <table class="data-table"><thead><tr><th>MSSV</th><th>Họ tên</th><th>Lớp</th><th>Mã đề</th><th>Môn</th><th>HK</th><th>Điểm</th><th>Ghi chú</th><th>Hành động</th></tr></thead><tbody>
+          <tr><td>21521001</td><td>Nguyễn Văn An</td><td>CS301.L11</td><td>DT-2024-058</td><td>CSDL</td><td>HK1</td><td style="font-weight:500">8.5</td><td></td><td><button class="action-btn" onclick="openModal('m-editgrade')">Sửa</button></td></tr>
+          <tr><td>21521002</td><td>Trần Thị Bình</td><td>CS301.L11</td><td>DT-2024-058</td><td>CSDL</td><td>HK1</td><td style="font-weight:500">6.0</td><td></td><td><button class="action-btn" onclick="openModal('m-editgrade')">Sửa</button></td></tr>
+          <tr><td>21521003</td><td>Lê Minh Cường</td><td>CS302.L21</td><td>DT-2024-057</td><td>MMT</td><td>HK1</td><td style="font-weight:500">7.5</td><td>Vắng 1 buổi</td><td><button class="action-btn" onclick="openModal('m-editgrade')">Sửa</button></td></tr>
+        </tbody></table>
+        <div class="pagination">Hiển thị 1–3 / 2.103 bản ghi</div>
+      </div>
+
+      <!-- NHẬP 1 SV -->
+      <div class="screen" id="screen-grade_new">
+        <div class="card">
+          <div class="section-divider">Nhập điểm cho sinh viên</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">MSSV *</label><input class="form-input" placeholder="Gõ để tìm..." value="21521001"></div>
+            <div class="form-group"><label class="form-label">Lớp *</label><select class="form-input"><option>CS301.L11 – CSDL</option></select></div>
+            <div class="form-group"><label class="form-label">Đề thi *</label><select class="form-input"><option>DT-2024-058 (CSDL – HK1)</option></select></div>
+            <div class="form-group"><label class="form-label">Học kỳ *</label><select class="form-input"><option>HK1</option></select></div>
+            <div class="form-group"><label class="form-label">Năm học *</label><input class="form-input" value="2024-2025"></div>
+            <div class="form-group"><label class="form-label">Điểm số * (0 – 10)</label><input class="form-input" type="number" step="0.1" min="0" max="10" value="8.5"></div>
+            <div class="form-group full"><label class="form-label">Ghi chú</label><textarea class="form-input" style="height:56px;resize:none;font-family:inherit" placeholder="Ghi chú tuỳ chọn..."></textarea></div>
+          </div>
+          <div class="form-actions"><button class="btn-primary" onclick="show('grades',null)"><i class="ti ti-device-floppy" aria-hidden="true"></i> Lưu điểm</button><button class="btn-secondary" onclick="show('grades',null)">Huỷ</button></div>
+        </div>
+      </div>
+
+      <!-- NHẬP ĐIỂM LOẠT -->
+      <div class="screen" id="screen-grade_batch">
+        <div class="card" style="margin-bottom:12px">
+          <div class="section-divider">Thông tin nhập điểm hàng loạt</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Lớp *</label><select class="form-input"><option>CS301.L11</option></select></div>
+            <div class="form-group"><label class="form-label">Đề thi *</label><select class="form-input"><option>DT-2024-058</option></select></div>
+            <div class="form-group"><label class="form-label">Học kỳ *</label><select class="form-input"><option>HK1</option></select></div>
+            <div class="form-group"><label class="form-label">Năm học *</label><input class="form-input" value="2024-2025"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px"><button class="btn-secondary"><i class="ti ti-download" aria-hidden="true"></i> Tải template Excel</button><button class="btn-secondary"><i class="ti ti-upload" aria-hidden="true"></i> Import từ file</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title">CS301.L11 – 42 SV <span style="font-size:10px;color:var(--color-text-tertiary);font-weight:400">Đã nhập: 4 | Điểm TB: 6.5</span></div>
+          <table class="data-table"><thead><tr><th>MSSV</th><th>Họ và tên</th><th style="width:110px">Điểm (0–10)</th><th>Ghi chú</th></tr></thead><tbody>
+            <tr><td>21521001</td><td>Nguyễn Văn An</td><td><input class="form-input" type="number" step="0.1" value="8.5" style="width:80px"></td><td><input class="form-input" placeholder="Ghi chú..." style="width:100%"></td></tr>
+            <tr><td>21521002</td><td>Trần Thị Bình</td><td><input class="form-input" type="number" step="0.1" value="6.0" style="width:80px"></td><td><input class="form-input" placeholder="Ghi chú..." style="width:100%"></td></tr>
+            <tr><td>21521003</td><td>Lê Quang Cảnh</td><td><input class="form-input" type="number" step="0.1" placeholder="—" style="width:80px"></td><td><input class="form-input" placeholder="Ghi chú..." style="width:100%"></td></tr>
+            <tr><td>21521004</td><td>Phạm Thị Diệu</td><td><input class="form-input" type="number" step="0.1" value="5.5" style="width:80px"></td><td><input class="form-input" placeholder="Ghi chú..." style="width:100%"></td></tr>
+          </tbody></table>
+          <div class="form-actions"><button class="btn-primary" onclick="show('grades',null)"><i class="ti ti-device-floppy" aria-hidden="true"></i> Lưu tất cả</button><button class="btn-secondary" onclick="show('grades',null)">Huỷ</button></div>
+        </div>
+      </div>
+
+      <!-- REPORT 1 -->
+      <div class="screen" id="screen-report1">
+        <div class="filter-bar">
+          <input type="text" value="2024-2025" style="width:160px;flex:none">
+          <select><option>Tất cả HK</option><option>HK1</option></select>
+          <button class="btn-primary"><i class="ti ti-search" aria-hidden="true"></i> Xem báo cáo</button>
+          <button class="topbar-action"><i class="ti ti-printer" aria-hidden="true"></i> In</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Số đề thi theo môn – HK1/2024-2025</div>
+          <div class="chart-bar-wrap" style="height:100px">
+            <div class="bar-col"><div class="bar" style="height:90px"></div><div class="bar-label">CSDL (12)</div></div>
+            <div class="bar-col"><div class="bar" style="height:67px"></div><div class="bar-label">MMT (9)</div></div>
+            <div class="bar-col"><div class="bar" style="height:100px"></div><div class="bar-label">GT1 (14)</div></div>
+            <div class="bar-col"><div class="bar" style="height:75px"></div><div class="bar-label">OOP (10)</div></div>
+            <div class="bar-col"><div class="bar" style="height:52px"></div><div class="bar-label">KTMT (7)</div></div>
+            <div class="bar-col"><div class="bar" style="height:83px"></div><div class="bar-label">DSA (11)</div></div>
+          </div>
+          <div style="margin-top:14px"><table class="data-table"><thead><tr><th>Mã môn</th><th>Tên môn</th><th>HK1</th><th>HK2</th><th>Tổng</th></tr></thead><tbody>
+            <tr><td>CS301</td><td>Cơ sở dữ liệu</td><td>12</td><td>8</td><td style="font-weight:500">20</td></tr>
+            <tr><td>CS302</td><td>Mạng máy tính</td><td>9</td><td>6</td><td style="font-weight:500">15</td></tr>
+            <tr><td>MA101</td><td>Giải tích 1</td><td>14</td><td>10</td><td style="font-weight:500">24</td></tr>
+            <tr><td>CS201</td><td>Lập trình OOP</td><td>10</td><td>7</td><td style="font-weight:500">17</td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+
+      <!-- REPORT 2 -->
+      <div class="screen" id="screen-report2">
+        <div class="filter-bar">
+          <input type="text" value="2024-2025" style="width:140px;flex:none">
+          <select><option>Tất cả HK</option></select>
+          <select><option>Tất cả môn</option></select>
+          <button class="btn-primary"><i class="ti ti-search" aria-hidden="true"></i> Xem</button>
+          <button class="topbar-action"><i class="ti ti-printer" aria-hidden="true"></i> In</button>
+        </div>
+        <div class="stat-grid" style="margin-bottom:12px">
+          <div class="stat-card"><div class="stat-label">SV dự thi</div><div class="stat-value">683</div></div>
+          <div class="stat-card"><div class="stat-label">Điểm TB</div><div class="stat-value">6.4</div></div>
+          <div class="stat-card"><div class="stat-label">Tỉ lệ đạt</div><div class="stat-value">81%</div></div>
+          <div class="stat-card"><div class="stat-label">Tổng lớp</div><div class="stat-value">16</div></div>
+        </div>
+        <div class="card"><table class="data-table"><thead><tr><th>Mã lớp</th><th>Tên lớp</th><th>Môn</th><th>Sĩ số</th><th>Dự thi</th><th>Điểm TB</th><th>Tỉ lệ đạt</th></tr></thead><tbody>
+          <tr><td>CS301.L11</td><td>CSDL – Lớp 11</td><td>CSDL</td><td>42</td><td>41</td><td style="font-weight:500">7.2</td><td>88%</td></tr>
+          <tr><td>CS302.L21</td><td>MMT – Lớp 21</td><td>MMT</td><td>38</td><td>37</td><td style="font-weight:500">6.8</td><td>84%</td></tr>
+          <tr><td>MA101.L31</td><td>GT1 – Lớp 31</td><td>GT1</td><td>45</td><td>44</td><td style="font-weight:500">5.4</td><td>68%</td></tr>
+          <tr><td>CS201.L12</td><td>OOP – Lớp 12</td><td>OOP</td><td>40</td><td>40</td><td style="font-weight:500">6.9</td><td>82%</td></tr>
+        </tbody></table></div>
+      </div>
+
+      <!-- MODALS -->
+      <div class="modal-backdrop" id="m-user" style="display:none">
+        <div class="modal-box">
+          <div class="modal-header">
+            <span class="modal-title"><i class="ti ti-user-plus" aria-hidden="true"></i> Thêm / Sửa tài khoản</span>
+            <i class="ti ti-x close-x" onclick="closeModal('m-user')"></i>
+          </div>
+          <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Tên đăng nhập *</label><input class="form-input" placeholder="VD: lehoa.gv" value="lehoa.gv"></div>
+              <div class="form-group"><label class="form-label">Mật khẩu *</label><input class="form-input" type="password" placeholder="••••••••"><div class="form-hint">Tối thiểu 8 ký tự</div></div>
+              <div class="form-group"><label class="form-label">Họ và tên *</label><input class="form-input" value="Lê Thị Hoa"></div>
+              <div class="form-group"><label class="form-label">Email *</label><input class="form-input" value="hoa.lt@uit.edu.vn"></div>
+              <div class="form-group"><label class="form-label">Vai trò *</label><select class="form-input"><option>Admin</option><option selected>Giảng viên</option></select></div>
+              <div class="form-group"><label class="form-label">Trạng thái *</label><select class="form-input"><option selected>Hoạt động</option><option>Khoá</option></select></div>
+              <div class="form-group" style="grid-column:1/-1"><label class="form-label">Khoa / Bộ môn</label><input class="form-input" value="Khoa Khoa học Máy tính"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('m-user')">Huỷ</button>
+            <button class="btn-primary" onclick="closeModal('m-user')"><i class="ti ti-check" aria-hidden="true"></i> Lưu</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="m-delete" style="display:none">
+        <div class="modal-box sm">
+          <div class="modal-header">
+            <span class="modal-title" style="color:var(--color-text-danger)"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Xác nhận xoá</span>
+            <i class="ti ti-x close-x" onclick="closeModal('m-delete')"></i>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:12px;line-height:1.6;color:var(--color-text-primary)">Bạn có chắc chắn muốn xoá bản ghi này không?</p>
+            <p style="font-size:11px;line-height:1.5;color:var(--color-text-secondary);margin-top:8px">Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xoá vĩnh viễn khỏi hệ thống.</p>
+            <div style="background:var(--color-background-danger);border:0.5px solid var(--color-border-danger);border-radius:var(--border-radius-md);padding:8px 10px;font-size:10px;color:var(--color-text-danger);margin-top:10px;display:flex;align-items:center;gap:5px">
+              <i class="ti ti-info-circle" aria-hidden="true"></i> Một số bản ghi có thể bị từ chối xoá nếu đang được tham chiếu (FK constraint).
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('m-delete')">Huỷ</button>
+            <button class="btn-danger" onclick="closeModal('m-delete')"><i class="ti ti-trash" aria-hidden="true"></i> Xoá</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="m-viewq" style="display:none">
+        <div class="modal-box lg">
+          <div class="modal-header">
+            <span class="modal-title"><i class="ti ti-eye" aria-hidden="true"></i> Chi tiết câu hỏi – CH0412</span>
+            <i class="ti ti-x close-x" onclick="closeModal('m-viewq')"></i>
+          </div>
+          <div class="modal-body">
+            <div style="display:flex;gap:18px;margin-bottom:12px;flex-wrap:wrap">
+              <div class="detail-field"><label>Môn học</label><span>Cơ sở dữ liệu (CS301)</span></div>
+              <div class="detail-field"><label>Độ khó</label><span><span class="badge">Trung bình</span></span></div>
+              <div class="detail-field"><label>Người soạn</label><span>Lê Thị Hoa</span></div>
+              <div class="detail-field"><label>Ngày tạo</label><span>17/05/2025</span></div>
+            </div>
+            <div class="section-divider">Nội dung</div>
+            <div style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;font-size:12px;line-height:1.7">
+              Trình bày khái niệm chuẩn hoá dữ liệu 3NF (Third Normal Form). Cho ví dụ minh hoạ với một bảng dữ liệu cụ thể và trình bày các bước chuyển đổi về dạng chuẩn 3NF. So sánh với 2NF và nêu rõ các phụ thuộc bắc cầu cần loại bỏ.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('m-viewq')">Đóng</button>
+            <button class="btn-primary" onclick="closeModal('m-viewq');show('question_form',null)"><i class="ti ti-pencil" aria-hidden="true"></i> Sửa câu hỏi</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="m-changepw" style="display:none">
+        <div class="modal-box sm">
+          <div class="modal-header">
+            <span class="modal-title"><i class="ti ti-lock" aria-hidden="true"></i> Đổi mật khẩu</span>
+            <i class="ti ti-x close-x" onclick="closeModal('m-changepw')"></i>
+          </div>
+          <div class="modal-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="form-group"><label class="form-label">Mật khẩu hiện tại *</label><input class="form-input" type="password" placeholder="••••••••"></div>
+              <div class="form-group"><label class="form-label">Mật khẩu mới *</label><input class="form-input" type="password" placeholder="Tối thiểu 8 ký tự"></div>
+              <div class="form-group"><label class="form-label">Xác nhận mật khẩu mới *</label><input class="form-input" type="password"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('m-changepw')">Huỷ</button>
+            <button class="btn-primary" onclick="closeModal('m-changepw')"><i class="ti ti-check" aria-hidden="true"></i> Cập nhật</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="m-editgrade" style="display:none">
+        <div class="modal-box">
+          <div class="modal-header">
+            <span class="modal-title"><i class="ti ti-pencil" aria-hidden="true"></i> Sửa điểm – 21521001</span>
+            <i class="ti ti-x close-x" onclick="closeModal('m-editgrade')"></i>
+          </div>
+          <div class="modal-body">
+            <div class="detail-header" style="margin-bottom:12px;padding:10px 12px">
+              <div class="detail-field"><label>Sinh viên</label><span>Nguyễn Văn An</span></div>
+              <div class="detail-field"><label>Lớp</label><span>CS301.L11</span></div>
+              <div class="detail-field"><label>Đề thi</label><span>DT-2024-058</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Điểm số * (0 – 10)</label><input class="form-input" type="number" step="0.1" value="8.5"></div>
+              <div class="form-group"><label class="form-label">Học kỳ</label><select class="form-input"><option>HK1</option></select></div>
+              <div class="form-group full"><label class="form-label">Ghi chú</label><textarea class="form-input" style="height:56px;font-family:inherit" placeholder="Ghi chú..."></textarea></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('m-editgrade')">Huỷ</button>
+            <button class="btn-primary" onclick="closeModal('m-editgrade')"><i class="ti ti-check" aria-hidden="true"></i> Lưu</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const titles={dashboard:'Dashboard',profile:'Hồ sơ cá nhân',users:'Quản lý tài khoản',subjects:'Môn học',classes:'Lớp học',class_detail:'Chi tiết lớp học – CS301.L11',students:'Sinh viên',difficulties:'Độ khó',regulations:'Quy định hệ thống',questions:'Ngân hàng câu hỏi',question_form:'Soạn / Sửa câu hỏi',exams:'Quản lý đề thi',exam_form:'Lập / Sửa đề thi',exam_detail:'Chi tiết đề thi – DT-2024-058',grades:'Tra cứu bảng điểm',grade_new:'Nhập điểm – 1 sinh viên',grade_batch:'Nhập điểm hàng loạt',report1:'Báo cáo đề thi theo môn',report2:'Báo cáo kết quả theo lớp'};
+document.body.setAttribute('data-role','admin');
+function show(id,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const s=document.getElementById('screen-'+id);
+  if(s)s.classList.add('active');
+  if(el)el.classList.add('active');
+  else{document.querySelectorAll('.nav-item').forEach(n=>{const oc=n.getAttribute('onclick');if(oc&&oc.indexOf("'"+id+"'")>-1)n.classList.add('active')})}
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+}
+function setRole(r){
+  document.body.setAttribute('data-role',r);
+  document.getElementById('btn-admin').classList.toggle('active',r==='admin');
+  document.getElementById('btn-gv').classList.toggle('active',r==='gv');
+  if(r==='admin'){
+    document.getElementById('user-avatar').textContent='AD';
+    document.getElementById('user-name').textContent='Nguyễn Minh Tuấn';
+    document.getElementById('user-role').textContent='Admin';
+    document.getElementById('role-sub').textContent='Admin đang đăng nhập';
+    document.getElementById('prof-av').textContent='AD';
+    document.getElementById('prof-name').textContent='Nguyễn Minh Tuấn';
+    document.getElementById('prof-role').textContent='Admin';
+    document.getElementById('prof-role2').textContent='Admin';
+  }else{
+    document.getElementById('user-avatar').textContent='LH';
+    document.getElementById('user-name').textContent='Lê Thị Hoa';
+    document.getElementById('user-role').textContent='Giảng viên';
+    document.getElementById('role-sub').textContent='Giảng viên đang đăng nhập';
+    document.getElementById('prof-av').textContent='LH';
+    document.getElementById('prof-name').textContent='Lê Thị Hoa';
+    document.getElementById('prof-role').textContent='Giảng viên';
+    document.getElementById('prof-role2').textContent='Giảng viên';
+    const curr=document.querySelector('.screen.active');
+    if(curr&&curr.id==='screen-users')show('dashboard',null);
+  }
+}
+function openModal(id){document.getElementById(id).style.display='flex'}
+function closeModal(id){document.getElementById(id).style.display='none'}
+function enterApp(){document.getElementById('login-screen').style.display='none';document.getElementById('main-app').style.display='block'}
+function logout(){document.getElementById('main-app').style.display='none';document.getElementById('login-screen').style.display='block'}
+</script>

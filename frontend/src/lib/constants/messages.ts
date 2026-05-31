@@ -1,0 +1,16 @@
+export const MSG = {
+  CREATED: 'Tạo mới thành công',
+  UPDATED: 'Cập nhật thành công',
+  DELETED: 'Xoá thành công',
+  CREATE_FAILED: 'Tạo mới thất bại',
+  UPDATE_FAILED: 'Cập nhật thất bại',
+  DELETE_FAILED: 'Xoá thất bại',
+  FORBIDDEN: 'Bạn không có quyền thực hiện thao tác này',
+  CONFLICT: 'Dữ liệu bị trùng hoặc còn tham chiếu',
+  NOT_FOUND: 'Không tìm thấy dữ liệu',
+  GENERIC: 'Đã có lỗi xảy ra',
+  REQUIRED: 'Không được để trống',
+  LOAD_FAILED: 'Không tải được dữ liệu',
+  CONFIRM_DELETE_TITLE: 'Xác nhận xoá',
+  CONFIRM_DELETE_DESC: 'Bạn có chắc muốn xoá mục này? Hành động không thể hoàn tác.',
+} as const;

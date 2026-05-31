@@ -1,0 +1,18 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# TS cache
+**/tsconfig.tsbuildinfo
+
+# Misc
+.claude/
+test-import-*.csv
