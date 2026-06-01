@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RegulationsService } from './regulations.service';
 import { CreateRegulationDto } from './dto/create-regulation.dto';
@@ -44,5 +44,12 @@ export class RegulationsController {
   ) {
     const maTKCapNhat = Number(req.user.sub);
     return this.service.update(tenThamSo, dto, maTKCapNhat);
+  }
+
+  // §1.5.2: Admin có quyền Xoá quy định
+  @Delete(':tenThamSo')
+  @Roles('admin')
+  remove(@Param('tenThamSo') tenThamSo: string) {
+    return this.service.remove(tenThamSo);
   }
 }

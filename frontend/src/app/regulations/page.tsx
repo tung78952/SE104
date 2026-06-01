@@ -2,15 +2,21 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save } from 'lucide-react';
+import { Plus, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
-import { DataTable, FormModal, type DataTableColumn } from '@/components/common';
+import { DataTable, FormModal, ConfirmDeleteModal, type DataTableColumn } from '@/components/common';
 import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/ui/icon-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { usePermission } from '@/hooks/usePermission';
-import { listRegulations, updateRegulation, createRegulation } from '@/lib/api/regulations';
+import {
+  listRegulations,
+  updateRegulation,
+  createRegulation,
+  deleteRegulation,
+} from '@/lib/api/regulations';
 import { getApiMessage, getApiStatus } from '@/lib/api/errors';
 import { MSG } from '@/lib/constants/messages';
 import { regulationCreateSchema, type RegulationCreateInput } from '@/lib/schemas/catalog';
@@ -20,11 +26,15 @@ import type { QuyDinh } from '@/types/models';
 
 const QUERY_KEY = ['regulations'] as const;
 
+// 5 tham số mặc định — hệ thống phụ thuộc, không cho phép xoá
+const DEFAULT_PARAMS = ['SoCauToiDa', 'ThoiLuongMin', 'ThoiLuongMax', 'DiemMin', 'DiemMax'];
+
 export default function RegulationsPage(): React.ReactElement {
   const perm = usePermission('regulations');
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [edits, setEdits] = useState<Record<string, string>>({});
+  const [deleting, setDeleting] = useState<QuyDinh | null>(null);
 
   const listQuery = useQuery({ queryKey: QUERY_KEY, queryFn: listRegulations });
 
@@ -62,6 +72,20 @@ export default function RegulationsPage(): React.ReactElement {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteRegulation,
+    onSuccess: async () => {
+      toast.success(MSG.DELETED);
+      setDeleting(null);
+      await qc.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+    onError: (err) => {
+      const status = getApiStatus(err);
+      if (status === 403) toast.warning(MSG.FORBIDDEN);
+      else toast.error(getApiMessage(err, MSG.DELETE_FAILED));
+    },
+  });
+
   const data = listQuery.data ?? [];
 
   const columns: DataTableColumn<QuyDinh>[] = [
@@ -96,24 +120,40 @@ export default function RegulationsPage(): React.ReactElement {
     {
       key: '__actions',
       header: '',
-      className: 'w-24 text-right',
+      className: 'w-36 text-right',
       render: (r) => {
-        if (!perm.canEdit) return null;
+        if (!perm.canEdit && !perm.canDelete) return null;
         const draft = edits[r.tenThamSo];
         const dirty = draft !== undefined && draft !== r.giaTri;
+        const isDefault = DEFAULT_PARAMS.includes(r.tenThamSo);
         return (
-          <Button
-            type="button"
-            size="sm"
-            disabled={!dirty || updateMutation.isPending}
-            onClick={() => {
-              if (!dirty) return;
-              updateMutation.mutate({ tenThamSo: r.tenThamSo, giaTri: draft });
-            }}
-          >
-            <Save />
-            Lưu
-          </Button>
+          <div className="flex items-center justify-end gap-1">
+            {perm.canEdit && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={!dirty || updateMutation.isPending}
+                onClick={() => {
+                  if (!dirty) return;
+                  updateMutation.mutate({ tenThamSo: r.tenThamSo, giaTri: draft });
+                }}
+              >
+                <Save />
+                Lưu
+              </Button>
+            )}
+            {perm.canDelete && !isDefault && (
+              <IconButton
+                type="button"
+                size="icon-sm"
+                variant="ghost"
+                tooltip="Xoá"
+                onClick={() => setDeleting(r)}
+              >
+                <Trash2 className="text-destructive" />
+              </IconButton>
+            )}
+          </div>
         );
       },
     },
@@ -145,6 +185,17 @@ export default function RegulationsPage(): React.ReactElement {
         onOpenChange={setCreateOpen}
         onSubmit={(d) => createMutation.mutateAsync(d).then(() => undefined)}
         submitting={createMutation.isPending}
+      />
+      <ConfirmDeleteModal
+        open={deleting !== null}
+        onOpenChange={(o) => {
+          if (!o) setDeleting(null);
+        }}
+        itemLabel={deleting ? `${deleting.tenThamSo} = ${deleting.giaTri}` : undefined}
+        onConfirm={() => {
+          if (deleting) deleteMutation.mutate(deleting.tenThamSo);
+        }}
+        loading={deleteMutation.isPending}
       />
     </AppShell>
   );

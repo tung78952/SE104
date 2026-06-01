@@ -65,6 +65,14 @@ export class RegulationsService {
     return updated;
   }
 
+  // §1.5.2: Admin có quyền Xoá quy định
+  async remove(tenThamSo: string) {
+    await this.findOne(tenThamSo);
+    await this.prisma.quyDinh.delete({ where: { tenThamSo } });
+    this.ruleEngine.invalidate(tenThamSo);
+    return { message: `Đã xoá quy định '${tenThamSo}'` };
+  }
+
   // SĐ9-B4: kiểm tra kiểu dữ liệu, phạm vi, và quan hệ giữa các tham số
   private async validateValue(tenThamSo: string, giaTri: string) {
     const n = Number(giaTri);

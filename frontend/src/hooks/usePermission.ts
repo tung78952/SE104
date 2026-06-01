@@ -56,7 +56,7 @@ const PERMISSIONS: Record<ResourceName, PermissionMatrix> = {
     canList: ['admin', 'giaovien'],
     canCreate: ['admin'],
     canEdit: ['admin'],
-    canDelete: [],
+    canDelete: ['admin'],
   },
   questions: {
     canList: ['admin', 'giaovien'],

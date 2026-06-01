@@ -29,3 +29,10 @@ export function updateRegulation(
     data: payload,
   });
 }
+
+export function deleteRegulation(tenThamSo: string): Promise<{ message: string }> {
+  return request<{ message: string }>({
+    method: 'DELETE',
+    url: `/regulations/${tenThamSo}`,
+  });
+}
