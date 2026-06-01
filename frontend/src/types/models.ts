@@ -57,6 +57,7 @@ export interface DeThi {
   monHoc?: MonHoc;
   giangVien?: GiangVien;
   chiTietDeThis?: ChiTietDeThi[];
+  _count?: { chiTietDeThis?: number };
 }
 
 export interface LopHoc {

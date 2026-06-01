@@ -164,7 +164,7 @@ export default function ExamsPage(): React.ReactElement {
       key: 'soCau',
       header: 'Số câu',
       className: 'w-20',
-      render: (r) => r.chiTietDeThis?.length ?? 0,
+      render: (r) => r._count?.chiTietDeThis ?? r.chiTietDeThis?.length ?? 0,
     },
     {
       key: 'nguoiLap',
